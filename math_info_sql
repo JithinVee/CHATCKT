@@ -1,0 +1,51 @@
+USE cricket;
+-- Create the matches table
+CREATE TABLE matches (
+    match_id INT AUTO_INCREMENT PRIMARY KEY,
+    date DATE NOT NULL,
+    venue VARCHAR(255),
+    match_type VARCHAR(50),
+    gender VARCHAR(20),
+    city VARCHAR(100),
+    match_status VARCHAR(50),
+    season VARCHAR(100),
+    tournament_name VARCHAR(255),
+    match_number INT,
+    player_of_the_match VARCHAR(255),
+    toss_won VARCHAR(255),
+    decision ENUM('bat', 'field') NOT NULL,
+    team_1 VARCHAR(255),
+    team_2 VARCHAR(255),
+    first_bat VARCHAR(255),
+    second_bat VARCHAR(255),
+    winner VARCHAR(255),
+    file_name VARCHAR(255),
+    team_type VARCHAR(50),
+    won_by_runs INT DEFAULT NULL,
+    won_by_wickets INT DEFAULT NULL,
+    total_dates INT,
+    balls_per_over INT DEFAULT 6
+);
+
+-- Create the officials table
+CREATE TABLE officials (
+    official_id INT AUTO_INCREMENT PRIMARY KEY,    -- Unique ID for each official
+    match_id INT NOT NULL,                         -- Foreign key referencing matches
+    umpire_name VARCHAR(255) NOT NULL,             -- Name of the umpire or official
+    role VARCHAR(50) NOT NULL,                     -- Role of the official (e.g., umpire, referee)
+    FOREIGN KEY (match_id) REFERENCES matches(match_id) ON DELETE CASCADE
+);
+
+-- Create the players table
+CREATE TABLE players (
+    player_id INT AUTO_INCREMENT PRIMARY KEY,      -- Unique ID for each player
+    match_id INT NOT NULL,                         -- Foreign key referencing matches
+    team_name VARCHAR(255) NOT NULL,               -- Name of the team
+    player_name VARCHAR(255) NOT NULL,             -- Name of the player
+    played BOOLEAN NOT NULL DEFAULT FALSE,         -- Flag indicating whether the player played in the match
+    FOREIGN KEY (match_id) REFERENCES matches(match_id) ON DELETE CASCADE
+);
+
+ALTER TABLE matches 
+ADD COLUMN draw BOOLEAN DEFAULT FALSE;
+
