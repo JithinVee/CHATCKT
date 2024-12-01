@@ -1,0 +1,15 @@
+fastapi==0.115.5
+google-ai-generativelanguage==0.6.10
+langchain==0.3.8
+langchain-community==0.3.8
+langchain-core==0.3.21
+langchain-google-genai==2.0.6
+langchain-openai==0.2.10
+langchain-text-splitters==0.3.2
+langsmith==0.1.146
+mysql-connector-python==9.1.0
+openai==1.55.3
+pydantic==2.10.2
+pydantic-settings==2.6.1
+pydantic_core==2.27.1
+uvicorn==0.32.1
