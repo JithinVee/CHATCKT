@@ -1,39 +1,47 @@
-/* Chat application container with a gradient background */
+/* General container styling */
 .chat-app-container {
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  /*background: linear-gradient(to right, #2e795c, #198669); /* Gradient background */
   background: linear-gradient(to right, #80c8ac, #69b39f);
   font-family: Arial, sans-serif;
   color: white;
   padding: 20px;
 }
 
+/* Chat container with shadow */
 .chat-container {
   width: 400px;
   height: 500px;
-  background-color: rgba(255, 255, 255, 0.9); /* Slight transparency */
+  background-color: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), /* Larger shadow effect */
-              0 6px 6px rgba(0, 0, 0, 0.23); /* Subtle bottom shadow */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
 
-
-.chat-header {
+/* Header with profile image and text */
+.chat-header-dp {
   padding: 15px;
   background-color: #0f9267;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  
-  font-size: 18px;
+  color: rgb(255, 187, 0); 
+  font-size: 26px;
   font-weight: bold;
-  text-align: center;
+  display: flex;
+  align-items: center; /* Align items (image & text) vertically */
 }
 
+.header-dp {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  border-radius: 50%; /* Circular DP */
+}
+
+/* Body section for chat messages */
 .chat-body {
   flex-grow: 1;
   padding: 15px;
@@ -42,6 +50,7 @@
   flex-direction: column;
 }
 
+/* Styling for each message */
 .chat-message {
   margin: 10px 0;
   padding: 10px;
@@ -60,12 +69,12 @@
   align-self: flex-start;
 }
 
+/* Input section */
 .chat-input {
   padding: 10px;
   display: flex;
   align-items: center;
   border-top: 1px solid #ddd;
-  border-radius: 10px;
   background-color: #f9f9f9;
 }
 
@@ -78,20 +87,57 @@
 }
 
 .chat-input button {
-    background-color: #25d366; /* WhatsApp green */
-    border: none;
-    border-radius: 50%; /* Circular button */
-    width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
+  background-color: #1f8645;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background-image: url('/src/bat.png');
+  background-size: 80%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-.chat-input button:hover {
-  background-color: #128c7e;
+/* Spinner for loading state */
+.spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  animation: spin 2s linear infinite;
 }
 
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner img {
+  width: 40px;
+  height: 40px;
+}
+
+
+.chat-header-dp {
+  padding: 15px;
+  background-color: #0f9267;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  color: rgb(255, 187, 0);
+  font-size: 26px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center; /* Centers the content horizontally */
+  align-items: center; /* Centers items vertically */
+}
+
+.header-dp {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  border-radius: 50%; /* Circular DP */
+}

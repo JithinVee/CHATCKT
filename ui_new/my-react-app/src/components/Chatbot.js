@@ -4,6 +4,7 @@ import './Chatbot.css';  // Import the CSS file
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [userInput, setUserInput] = useState('');
+  const [loading, setLoading] = useState(false); // New state to control spinner
 
   // Handle message send
   const handleSend = async () => {
@@ -12,6 +13,7 @@ const Chatbot = () => {
       const newMessages = [...messages, { sender: 'user', text: userInput }];
       setMessages(newMessages);
       setUserInput('');
+      setLoading(true); // Show spinner when message is sent
   
       try {
         // Make the API call
@@ -49,6 +51,8 @@ const Chatbot = () => {
           ...prevMessages,
           { sender: 'bot', text: 'An error occurred. Please try again later.' },
         ]);
+      } finally {
+        setLoading(false); // Hide spinner when response is done or error occurs
       }
     }
   };
@@ -56,16 +60,28 @@ const Chatbot = () => {
   return (
     <div className="chat-app-container">
       <div className="chat-container">
-        <div className="chat-header">CrickLyst</div>
+      <div className="chat-header-dp">
+  <img src="/cricket.png" alt="CrickLyst logo" className="header-dp" /> {/* DP Image */}
+  <div className='cricklyst'>
+    CrickLyst
+  </div>
+</div>
+
         <div className="chat-body">
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`chat-message ${msg.sender === 'user' ? 'user-message' : 'bot-message'}`} // Fixed here
+              className={`chat-message ${msg.sender === 'user' ? 'user-message' : 'bot-message'}`}
             >
               {msg.text}
             </div>
           ))}
+          {/* Show the loading spinner while waiting for the API response */}
+          {loading && (
+            <div className="spinner">
+              <img src="/ball.png" alt="loading" />
+            </div>
+          )}
         </div>
         <div className="chat-input">
           <input
@@ -74,7 +90,7 @@ const Chatbot = () => {
             onChange={(e) => setUserInput(e.target.value)}
             placeholder="Type a message..."
           />
-          <button onClick={handleSend}>Send</button>
+          <button onClick={handleSend}></button>
         </div>
       </div>
     </div>
