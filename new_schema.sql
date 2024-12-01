@@ -86,7 +86,9 @@ CREATE TABLE player_statistics (
     wickets INT DEFAULT 0,                        -- Wickets taken by the player
     fours INT DEFAULT 0,                          -- Number of boundaries (4s)
     sixes INT DEFAULT 0,                          -- Number of sixes
-    maiden_overs INT DEFAULT 0,                   -- Maiden overs bowled
+    maiden_overs INT DEFAULT 0,
+    strike_rate DECIMAL(5, 2) DEFAULT NULL,
+    economy_rate DECIMAL(5, 2) DEFAULT NULL,
     FOREIGN KEY (match_id) REFERENCES matches(match_id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (innings_id) REFERENCES innings(innings_id) ON DELETE CASCADE

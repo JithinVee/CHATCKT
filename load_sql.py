@@ -4,7 +4,7 @@ import mysql.connector
 from mysql.connector import Error
 import json
 import re
-
+from datetime import datetime, timedelta
 
 # Database configuration
 DB_CONFIG = {
@@ -13,7 +13,7 @@ DB_CONFIG = {
     'password': '12345678',
     'database': 'crickshopalyst'
 }
-team_id_map = {} 
+team_id_map = {}
 player_id_map = {}
 
 def create_connection():
@@ -26,6 +26,13 @@ def create_connection():
     except Error as e:
         print(f"Error connecting to database: {e}")
         return None
+
+
+
+def skip_old_dates(date_string):
+    date_object = datetime.strptime(date_string, "%Y-%m-%d")
+    cutoff_date = datetime.now() - timedelta(days=10 * 365)
+    return date_object >= cutoff_date
 
 
 def insert_team(cursor, team_name, team_type):
@@ -129,12 +136,12 @@ def insert_officials_from_data(cursor, match_id, officials_data):
 
 
 # Function to insert player statistics into the player_statistics table
-def insert_player_statistics(cursor, match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs):
+def insert_player_statistics(cursor, match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs,strike_rate,bowling_economy):
     try:
         cursor.execute("""
-            INSERT INTO player_statistics (match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs))
+            INSERT INTO player_statistics (match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs,strike_rate,economy_rate)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s, %s)
+        """, (match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs,strike_rate,bowling_economy))
     except Error as e:
         print(f"Error inserting player statistics: {e}")
 
@@ -164,15 +171,25 @@ def insert_innings_and_deliveries(cursor, innings_data, match_id):
         delivery_data = []  # List to hold deliveries data to insert into the deliveries table
 
         # Iterate over each over and its deliveries to calculate totals and prepare delivery data
+        if not innings.get('overs'):
+            continue
         for over in innings['overs']:
             total_overs += 1
             ball_count = 0
+            over_runs = 0
+            over_extras = 0
+            bowlers_bowler_in_an_over = []
+
             for delivery in over['deliveries']:
                 ball_count+=1
+                bowler_id = player_id_map.get(delivery['bowler'])
+                if bowler_id not in bowlers_bowler_in_an_over:
+                    bowlers_bowler_in_an_over.append(bowler_id)
                 runs_batsman = delivery['runs']['batter']
                 total_runs += runs_batsman
                 total_extras += delivery['runs']['extras']
-
+                over_runs += runs_batsman
+                over_extras += delivery['runs']['extras']
                 # Accumulate player statistics (for batter)
                 batter_id = player_id_map.get(delivery['batter'])
                 if batter_id not in player_stats:
@@ -182,7 +199,10 @@ def insert_innings_and_deliveries(cursor, innings_data, match_id):
                         'wickets': 0,
                         'fours': 0,
                         'sixes': 0,
-                        'maiden_overs': 0
+                        'maiden_overs': 0,
+                        'balls_bowled': 0,
+                        'runs_conceded': 0
+
                     }
                 player_stats[batter_id]['runs'] += runs_batsman
                 player_stats[batter_id]['balls_faced'] += 1
@@ -197,36 +217,36 @@ def insert_innings_and_deliveries(cursor, innings_data, match_id):
                 if 'wickets' in delivery:
                     total_wickets += len(delivery['wickets'])  # Count number of wickets in the delivery
                     for wicket in delivery['wickets']:
-                        bowler_id = player_id_map.get(delivery['bowler'])
-                        if bowler_id not in player_stats:
+
+                        if not player_stats.get(bowler_id):
                             player_stats[bowler_id] = {
                                 'runs': 0,
                                 'balls_faced': 0,
                                 'wickets': 0,
                                 'fours': 0,
                                 'sixes': 0,
-                                'maiden_overs': 0
+                                'maiden_overs': 0,
+                                'balls_bowled': 0,
+                                'runs_conceded': 0
                             }
                         player_stats[bowler_id]['wickets'] += 1
                         player_stats[bowler_id]['balls_faced'] += 1  # Each delivery is a ball faced for the bowler
 
-                # Count maiden overs for bowler
-                if runs_batsman == 0 and 'bowler' in delivery:
-                    bowler_id = player_id_map.get(delivery['bowler'])
-                    if player_stats.get('bowler_id'):
-                        player_stats[bowler_id]['maiden_overs'] += 1
-                    else:
-                        player_stats[bowler_id] = {
-                            'runs': 0,
-                            'balls_faced': 0,
-                            'wickets': 0,
-                            'fours': 0,
-                            'sixes': 0,
-                            'maiden_overs': 1
-                        }
 
                 # Prepare data for insertion into the deliveries table
                 bowler_id = player_id_map.get(delivery['bowler'])
+                if bowler_id not in player_stats:
+                    player_stats[bowler_id] = {
+                        'runs': 0,
+                        'balls_faced': 0,
+                        'wickets': 0,
+                        'fours': 0,
+                        'sixes': 0,
+                        'maiden_overs': 0,
+                        'balls_bowled': 0,
+                        'runs_conceded': 0
+
+                    }
                 non_striker_id = player_id_map.get(delivery['non_striker'])  # Non-striker player ID (if needed)
 
 
@@ -240,6 +260,10 @@ def insert_innings_and_deliveries(cursor, innings_data, match_id):
                         extras_type = 'no-ball'
                     elif 'byes' in delivery['extras'] and delivery['extras']['byes'] > 0:
                         extras_type = 'bye'
+                # Update bowler statistics
+                if extras_type not in ['wide', 'no-ball']:
+                    player_stats[bowler_id]['balls_bowled'] += 1
+                player_stats[bowler_id]['runs_conceded'] += delivery['runs']['total']
 
                 wicket_type = None  # Default to NULL if there is no dismissal or invalid type
                 dismissed_player_id = None
@@ -261,6 +285,13 @@ def insert_innings_and_deliveries(cursor, innings_data, match_id):
                     runs_batsman, delivery['runs']['extras'], delivery['runs']['total'], extras_type, wicket_type, dismissed_player_id
                 ))
 
+            if len(bowlers_bowler_in_an_over) ==1:
+                if (over_runs+over_extras) == 0 :
+                    bowler_id = bowlers_bowler_in_an_over[0]
+                    if player_stats.get(bowler_id):
+                        player_stats[bowler_id]['maiden_overs'] += 1
+
+
         # Insert the aggregated innings data into the `innings` table
         cursor.execute("""
             INSERT INTO innings (innings_id,match_id, team_id, total_runs, total_wickets, total_overs, extras)
@@ -272,15 +303,25 @@ def insert_innings_and_deliveries(cursor, innings_data, match_id):
 
         # Insert player statistics (batter and bowler statistics)
         for player_id, stats in player_stats.items():
-            runs = stats['runs']
-            balls_faced = stats['balls_faced']
-            wickets = stats['wickets']
-            fours = stats['fours']
-            sixes = stats['sixes']
-            maiden_overs = stats['maiden_overs']
+            try:
+                runs = stats['runs']
+                balls_faced = stats['balls_faced']
+                wickets = stats['wickets']
+                fours = stats['fours']
+                sixes = stats['sixes']
+                maiden_overs = stats['maiden_overs']
+                balls_bowled = stats['balls_bowled']
+                runs_conceded = stats['runs_conceded']
+
+                # strike rates and  economy
+                strike_rate = (runs / balls_faced) * 100 if balls_faced > 0 else None
+                bowling_economy = (runs_conceded / (balls_bowled / 6)) if balls_bowled > 0 else None
+            except:
+                print(f'skipping {player_id} player details')
+                continue
 
             # Insert player statistics for the aggregated innings
-            insert_player_statistics(cursor, match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs)
+            insert_player_statistics(cursor, match_id, player_id, innings_id, runs, balls_faced, wickets, fours, sixes, maiden_overs,strike_rate,bowling_economy)
 
         # Insert all deliveries data into the `deliveries` table at once
         for delivery in delivery_data:
@@ -317,6 +358,10 @@ def load_json_files(directory):
 
                     # Extract match-related details
                     match_data = extract_match_data(match_info, filename)
+
+                    match_date=match_data['date']
+                    if not skip_old_dates(match_date):
+                        continue
 
                     match_id = match_data['match_id']
                     try:
