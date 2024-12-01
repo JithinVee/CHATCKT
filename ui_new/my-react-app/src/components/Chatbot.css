@@ -1,0 +1,97 @@
+/* Chat application container with a gradient background */
+.chat-app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /*background: linear-gradient(to right, #2e795c, #198669); /* Gradient background */
+  background: linear-gradient(to right, #80c8ac, #69b39f);
+  font-family: Arial, sans-serif;
+  color: white;
+  padding: 20px;
+}
+
+.chat-container {
+  width: 400px;
+  height: 500px;
+  background-color: rgba(255, 255, 255, 0.9); /* Slight transparency */
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), /* Larger shadow effect */
+              0 6px 6px rgba(0, 0, 0, 0.23); /* Subtle bottom shadow */
+}
+
+
+.chat-header {
+  padding: 15px;
+  background-color: #0f9267;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.chat-body {
+  flex-grow: 1;
+  padding: 15px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-message {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #2965ae;
+  border-radius: 5px;
+}
+
+.user-message {
+  background-color: #0f5fc2;
+  color: white;
+  align-self: flex-end;
+}
+
+.bot-message {
+  background-color: #0f5fc2;
+  align-self: flex-start;
+}
+
+.chat-input {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+.chat-input input {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  margin-right: 10px;
+}
+
+.chat-input button {
+    background-color: #25d366; /* WhatsApp green */
+    border: none;
+    border-radius: 50%; /* Circular button */
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.chat-input button:hover {
+  background-color: #128c7e;
+}
+
