@@ -4,7 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_openai import ChatOpenAI
-from CHATCKT.llm_api.adapters.sql_adapter import get_db
+from adapters.sql_adapter import get_db
 
 class Query(BaseModel):
     question: str

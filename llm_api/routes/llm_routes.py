@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
-from CHATCKT.llm_api.services.llm_service import convert_to_sql, convert_nl_resp
+from services.llm_service import convert_to_sql, convert_nl_resp
 
 # Define the Pydantic model to handle input data
 class Query(BaseModel):
@@ -11,9 +11,9 @@ class Query(BaseModel):
 router = APIRouter()
 
 @router.get("/sql_query")
-async def convert_query(query: Query):
+async def convert_sql_query(cmd: str):
     # Run the SQL chain to generate the SQL query from the input question
-    sql_query = convert_to_sql(query.question)
+    sql_query = convert_to_sql(cmd)
     return JSONResponse(content={"sql_query": sql_query})
 
 @router.post("/query")
