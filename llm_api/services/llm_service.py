@@ -14,7 +14,7 @@ openai_api_key = os.getenv("OPENAI_API_KEY")  # Make sure to set this environmen
 # get mysql db
 db = get_db()
 
-template = """Based on the table schema below, write a SQL query that would answer the user's question:
+template = """Based on the cricket table schema below, write a SQL query that would answer the user's question, if the question is a general greetings, for eg: 'hi', 'hello', 'how are you', 'good morning', don't give a sql response :
 {schema}
 
 Question: {question}
@@ -36,7 +36,7 @@ sql_chain = (
 )
 
 
-template = """Based on the table schema below, question, sql query, and sql response, write a natural language response:
+template = """Based on the cricket table schema below, question, sql query, and sql response, write a natural language response, dont expose table id details:
 {schema}
 
 Question: {question}
@@ -49,11 +49,19 @@ def run_query(query):
     return db.run(query)
 
 full_chain = (
-    RunnablePassthrough.assign(query=sql_chain).assign(
-        schema=get_schema,
-        response=lambda vars: run_query(vars["query"]),
-    )
+    RunnablePassthrough.assign(schema=get_schema)
     | prompt_response
+    | llm
+    | StrOutputParser()
+)
+
+template = """This is a chat bot that answers cricket related questions, write a natural language response for the user question:
+Question: {question}
+Response:"""
+normal_response = ChatPromptTemplate.from_template(template)
+
+normal_chain = (
+    normal_response
     | llm
     | StrOutputParser()
 )
@@ -64,5 +72,15 @@ def convert_to_sql(query: str):
 
 def convert_nl_resp(query: str):
     print("convert_nl_resp:",query)
-    nl_resp = full_chain.invoke({"question": query})
+    sql_query = sql_chain.invoke({"question": query})
+    print(sql_query)
+    if 'select' in sql_query.lower():
+        try:
+            db_resp = run_query(sql_query)
+            nl_resp = full_chain.invoke({"question": query, "query": sql_query, "response": db_resp})
+        except Exception:
+            nl_resp = "I don't have the right information to fulfil your query."
+    else:
+        nl_resp = normal_chain.invoke({"question": query})
+
     return nl_resp

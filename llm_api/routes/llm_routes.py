@@ -2,8 +2,8 @@ import traceback
 from fastapi import APIRouter
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
-# from services.llm_service import convert_to_sql, convert_nl_resp
-from services.g_service import convert_to_sql, convert_nl_resp
+from services.llm_service import convert_to_sql, convert_nl_resp
+# from services.g_service import convert_to_sql, convert_nl_resp
 
 # Define the Pydantic model to handle input data
 class Query(BaseModel):
